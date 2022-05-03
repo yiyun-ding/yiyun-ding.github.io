@@ -1,0 +1,321 @@
+---
+title: "Gender Equality and the Overall Development of the Country"
+output: html_document
+---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F, R.options=list(max.print=100))
+```
+
+## 1. Introduction (Xiaojun)
+
+Although there is a lack of clear agreement on which countries fit the category of developing or developed countries, the Human Development Index (HDI) is often considered an important division criterion that classifies the countries with HDI equal to or greater than 0.8 as developed countries and the countries with HDI under 0.8 as developing countries (O'Sullivan 2003). Since HDI indicates the development of education, economy, life expectancy, etc. of a country, we would like to see if gender equality variables such as women business and law index also play roles in indicating the development status of a country and if we could predict development status of a country through gender equality variables.
+
+We got the datasets from Gapminder. They are all with 3 variables which are country, year and the value of an indicator. A common problem of those datasets is their column names are years rather than names of the indicators, so we used pivot_longer to make them tidy. Besides, we join all the tidy datasets into one dataset. Through exploring the datasets, we saw that there are the most complete data in 2014, so we will only be focused on the year 2014.
+
+Here is the list of the variables we will use and the clarification of some key variables:
+
+1.   Country development variables:
+-    Human development index: It contains three dimensions - health level, educational level, and living standard.
+-    Happiness Score: The national average response to the question of life evaluations.
+2.   Gender equality variables:
+-    Proportion of seats held by women in national parliaments
+-    Female long term unemployment rate: Percentage of female population that that has been registered as long-term unemployed during the given year.
+-    Women business and the law index: It measures the laws and regulations that affect women’s economic opportunity.
+-    Children per woman
+-    Labor force participation rate, females aged 25-54
+-    Gender ratio of mean years in school (women % men, 25 to 34 years)
+3.   Categorical:
+-    Country
+-    Year
+
+We expect that through looking at gender equality variables, it could predict if a country is a developing or developed country. We assumed that developed countries would have a higher happiness score, higher proportion of seats held by women in national parliaments, lower female long term unemployment rate, higher women business and the law index, lower number of children per woman, higher labor force participation rate of women aged 25 to 34, and higher gender ratio of mean years in school for women aged 25 to 34. Additionally, the human development index might have a stronger relationship with happiness score, labor force participation rate, and gender ratio of mean years in school. 
+
+*Source:*
+
+*Based on free material from GAPMINDER.ORG, CC-BY LICENSE.*
+
+*O'Sullivan A, Sheffrin SM (2003). Economics: Principles in Action. Upper Saddle River, New Jersey 07458: Pearson Prentice Hall. p. 471. ISBN 978-0-13-063085-8.*
+
+## 2. Data Wrangling (Yiyun)
+We created a new categorical variable `development` to define developing and developed countries with human development index. A country with human development index above 0.8 is defined as developed country, and a country with human development index lower than 0.8 is considered as a developing country. 
+```{r}
+
+# Call the package
+library(tidyverse)
+library(factoextra)
+library(cluster)
+library(readr)
+library(plotROC)
+
+# Read and rename the datasets
+human_development_index <- read_csv("hdi_human_development_index (1989-2018).csv")
+national_parliaments_proportion <- read_csv("Proportion of seats held by women in national parliaments (%) (1996-2019).csv")
+unemployment_rate <- read_csv("female_long_term_unemployment_rate_percent (1989-2019).csv")
+business_and_law_index <- read_csv("Women business and the law index score (1969-2019).csv")
+females_labour_force_participation <- read_csv("females_aged_25_54_labour_force_participation_rate_percent.csv")
+gender_ratio_of_mean_years_in_school <- read_csv("mean_years_in_school_women_percent_men_25_to_34_years.csv")
+happiness_score <- read_csv("hapiscore_whr (2004-2018).csv")
+children_per_woman_total_fertility <- read_csv("children_per_woman_total_fertility.csv")
+
+# Use pivot_longer() to have an observation for each country/year
+hdi <- human_development_index %>% # Save the new dataset as "hdi"
+  pivot_longer(cols = 2:31, # Columns to put as rows
+               names_to = "year", # Save those names as a variable year
+               # Save the cell values as a variable human_development_index
+               values_to = "human_development_index") 
+
+# Do the same for other datasets
+npp <- national_parliaments_proportion %>%
+  pivot_longer(cols = 2:25, 
+               names_to = "year",
+               values_to = "Proportion_of_seats_held_by_women_in_national_parliaments")
+
+ur <- unemployment_rate %>% 
+  pivot_longer(cols = 2:32, 
+               names_to = "year", 
+               values_to = "Female_long_term_unemployment_rate") 
+
+bali <- business_and_law_index %>% 
+  pivot_longer(cols = 2:52, 
+               names_to = "year", 
+               values_to = "Women_business_and_the_law_index_score") 
+
+flfp <- females_labour_force_participation %>% 
+  pivot_longer(cols = 2:31, 
+               names_to = "year", 
+               values_to = "Labor_force_female_percentage")
+
+gromyis <- gender_ratio_of_mean_years_in_school %>% 
+  pivot_longer(cols = 2:47, 
+               names_to = "year", 
+               values_to = "Gender_ratio_of_mean_years_in_school")
+
+hs <- happiness_score %>% 
+  pivot_longer(cols = 2:16, 
+               names_to = "year", 
+               values_to = "Happiness_score")
+
+cpw <- children_per_woman_total_fertility %>% 
+  pivot_longer(cols = 2:302, 
+               names_to = "year", 
+               values_to = "children_per_woman")
+
+# Create a new data set called `join_data` to combine all data set
+join_data <- npp%>%
+  left_join(hdi, by = c("country","year"))%>%
+  left_join(ur, by = c("country","year"))%>%
+  left_join(bali, by = c("country","year"))%>%
+  left_join(cpw, by = c("country","year"))%>%
+  left_join(flfp, by = c("country","year"))%>%
+  left_join(gromyis, by = c("country","year"))%>%
+  left_join(hs, by = c("country","year"))
+
+# Create the final dataset
+final_data <- join_data %>%
+  # Create a new categorical variable based on the human development index
+  mutate(development = ifelse(human_development_index < 0.8, "developing", "developed")) %>%
+  # Only show the data in 2014
+  filter(year == 2014) %>%
+  # Rename the variables
+  rename(seat_proportion = Proportion_of_seats_held_by_women_in_national_parliaments,
+         hdi = human_development_index,
+         unemployment = Female_long_term_unemployment_rate,
+         business_law = Women_business_and_the_law_index_score,
+         labor_force = Labor_force_female_percentage,
+         gender_school = Gender_ratio_of_mean_years_in_school) %>%
+  # Remove the missing values
+  na.omit()
+
+```
+
+## 2. Exploratory Data Analysis (Yiyun)
+Explore relationships between main variables by creating a correlation matrix with univariate/bivariate graphs and correlation coefficients. 
+```{r}
+
+# Create a correlation matrix with all the numeric variables
+final_num <- final_data %>%
+  select_if(is.numeric) 
+cor(final_num, use = "pairwise.complete.obs")
+
+# Make it pretty using a heatmap with geom_tile
+cor(final_num, use = "pairwise.complete.obs") %>%
+  # Save as a data frame
+  as.data.frame %>%
+  # Convert row names to an explicit variable
+  rownames_to_column %>%
+  # Pivot so that all correlations appear in the same column
+  pivot_longer(-1, names_to = "other_var", values_to = "correlation") %>%
+  ggplot(aes(rowname, other_var, fill = correlation)) +
+  # Heatmap with geom_tile
+  geom_tile() +
+  # Change the scale to make the middle appear neutral
+  scale_fill_gradient2(low="red",mid="white",high="blue") +
+  # Overlay values
+  geom_text(aes(label = round(correlation,2)), color = "black", size = 4) +
+  # Give title and labels
+  labs(title = "Correlation matrix for the dataset final_data", x = "variable 1", y = "variable 2") +
+  # Change the axis size
+  theme(axis.text.x = element_text(size = 8, angle = 90))
+```
+*From the correlation heatmap, we can see that human development index and the number of children per woman are the most correlated. The relationship between between proportion of seats held by women in national parliaments and gender ratio of mean years in school (women % men, 25 to 34 years) is the weakest.*
+
+## 3. Clustering (Xiaojun)
+We are going to incorporate categorical variables and perform clustering based on Gower dissimilarities.
+```{r}
+
+# Identify the variable `development` as factor
+final_data_factor <- final_data %>%
+  mutate_if(is.character, as.factor)
+
+# Prepare the data (we drop the variables that are not directly related to gender equality)
+final_data_factor1 <- final_data %>%
+  select(-year, -country, -hdi, -Happiness_score, -development) %>%
+  mutate_if(is.character, as.factor)
+
+# Calculate Gower's distances between observations
+final_data_gower <- daisy(final_data_factor1, metric = "gower") %>%
+  # Save as a matrix
+  as.matrix
+
+# Apply the PAM algorithm to the "dissimilarity" object to see how many clusters we should consider
+fviz_nbclust(final_data_gower, pam, method = "silhouette")
+
+```
+*Based on silhouette width, the number of clusters we should consider is 2.*
+
+```{r}
+
+# Apply PAM on the dissimilarity object
+pam_results <- pam(final_data_gower, k = 2, diss = TRUE)
+pam_results
+
+# Save cluster assignment as a column in the dataset
+final_data_pam <- final_data_factor1%>%
+mutate(cluster = as.factor(pam_results$clustering))
+
+# Visualize the clusters
+pam_results$data=final_data_gower
+
+fviz_cluster(pam_results, data = final_data_factor1,
+             shape = final_data_factor$development)+
+  geom_point(aes(shape = final_data_factor$development)) +
+  guides(shape = guide_legend(title = "shape"))
+
+```
+*From the plot, we can roughly see that most of the developing countries are in Cluster 1, and most of the developed countries are in Cluster 2.*
+
+```{r}
+# Compare the cluster and development
+table(final_data_pam$cluster, final_data$development)
+
+# Finding means of each variable for each cluster
+final_data_pam %>%
+  group_by(cluster) %>%
+  summarize_if(is.numeric, mean, na.rm = T)
+
+# Which countries are more representative of their cluster?
+# Look at the final medoids
+final_data_factor[pam_results$id.med,]
+
+
+```
+*Through comparing the cluster and development, we can see that in Cluster 1, there are 30 developing countries and 14 developed countries. For Cluster 2, there are 31 developed countries and only 4 developing countries. From the means of each variable for each cluster, we noticed that there are big differences in proportion of seats held by women in national parliaments, women business and the law index, and labor force participation rate of females aged 25-54 between Cluster 1 and Cluster 2. Chile is more representative of Cluster 1 while Luxembourg is more representative of Cluster 2.*
+
+## 4. Dimensionality Reduction (Yiyun)
+In this section, we will perform PCA on all of the gender equality variables to see their interrelationships. 
+```{r}
+
+final_data_factor1 %>%
+  # Scale the variables
+  scale %>%
+  # Save the new dataset as a dataframe "final_frame"
+  as.data.frame -> final_scale
+
+final_scale %>%
+  # Perform PCA on the measurements and save the resulting dataframe as "pca"
+  prcomp() -> pca
+
+#Construct a scree plot to show the percentage of explained variance for PCs
+fviz_eig(pca, addlabels = TRUE)
+
+# Visualize the 5 top contributions of the variables to PC1
+fviz_contrib(pca, choice = "var", axes = 1, top = 5)
+# Visualize the 5 top contributions of the variables to PC2
+fviz_contrib(pca, choice = "var", axes = 2, top = 5)
+```
+*The first two PCs can explain 64.5% of the total variances and the first three can explain 80.8%. The women business and the law index, the female labor force participation rate, children per woman, and gender ratio of mean years in school contribute above-average to PC1, among which the women business and the law index contributes the most with nearly 30% of contributions. However, PC2 is primarily contributed by the proportion of seats held by women in national parliaments, with over 45% of contributions. We could say PC1 is more about women's career development opportunity and PC2 is focus on women's political rights based on the contributions of the variables.*
+
+## 5. Classification  and  Cross-validation (Yiyun, Xiaojun)
+We will use logistic regression to predict the development status of a country based on variables related to gender equality in the dataset.
+```{r}
+# Prepare the dataset
+  final_data_factor <- final_data_factor %>%
+  mutate(development = ifelse(development == "developing", 0, 1)) 
+
+# Use logistic regression
+logistic_fit <- glm(development ~ seat_proportion + unemployment + business_law + children_per_woman + labor_force + gender_school, 
+                    data = final_data_factor, family = "binomial")
+
+# Calculate a predicted probability
+log_final_data <- final_data_factor %>% 
+  mutate(probability = predict(logistic_fit, type = "response"))
+```
+
+```{r}
+# Build the ROC curve for this model
+ROC <- ggplot(log_final_data) + 
+  geom_roc(aes(d = as.numeric(development), m = probability, n.cuts = 0))
+ROC
+# Compute the AUC
+calc_auc(ROC)
+```
+*The AUC is 0.933 which means the logistic regression model is great.*
+
+We will then perform k-fold cross-validation to test our model.
+```{r}
+# Set a seed to get reproducible results
+set.seed(322)
+
+k = 10
+
+# Randomly order rows in the dataset
+data <- final_data_factor[sample(nrow(final_data_factor)), ] 
+
+# Create k folds from the dataset
+folds <- cut(seq(1:nrow(data)), breaks = k, labels = FALSE) 
+
+# Use a for loop to get diagnostics for each test set
+diags_k <- NULL
+
+for(i in 1:k){
+  # Create training and test sets
+  train <- data[folds != i, ] # all observations except in fold i
+  test <- data[folds == i, ]  # observations in fold i
+  
+  # Train model on training set (all but fold i)
+  fit <- glm(development ~ seat_proportion + unemployment + business_law + children_per_woman + labor_force + gender_school, 
+                    data = final_data_factor, family = "binomial")
+  
+  # Test model on test set (fold i)
+  df <- data.frame(
+    prob = predict(fit, newdata = test, type = "response"),
+    y = test$development)
+  
+  # Consider the ROC curve for the test dataset
+  ROCplot <- ggplot(df) + geom_roc(aes(d = y, m = prob), n.cuts = 0)
+ 
+  # Get diagnostics for fold i (AUC)
+  diags_k[i] <- calc_auc(ROCplot)$AUC
+}  
+
+# Resulting diagnostics for average performance
+mean(diags_k)  
+```
+*After we performed 10-fold cross-validation with this model, there's not a noticeable decrease in AUC so this model is not overfitting.*
+
+*Based on all the analysis we did in this project we could conclude that gender equality is a reliable predictor of the overall development status of a country. The economically-advanced countries tend to perform better on the gender equality indicators than the developing countries.*
+
+```{r, echo=F}
+## DO NOT DELETE THIS BLOCK!
+Sys.info()
+```

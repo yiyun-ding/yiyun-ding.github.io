@@ -1,0 +1,392 @@
+---
+title: "The Development of Gender Equality across the World"
+output: html_document
+---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F, R.options=list(max.print=100))
+```
+
+## 1. Introduction
+
+With the rise of feminism, there are many gender equality activities such as HeForShe and MeToo launched in recent years around the world. It also brings us the questions that women in which countries have the highest society status, how the status of women in the society changed over years. To solve those kinds of questions, we do the analysis to find out the answers. Since the status of women could be reflected in many aspects such as education, work, and politics, we will include different gender equality indicators in this report.
+
+In addition to gender equality indicators, we will apply some general country development indicators to investigate the relationship between variables. Here is the list of the variables we will use and the clarification of some key variables:
+
+1.   Country development variables:
+-    Human development index: It contains three dimensions - health level, educational level, and living standard.
+-    Happiness Score: The national average response to the question of life evaluations.
+2.   Gender equality variables:
+-    Proportion of seats held by women in national parliaments
+-    Female long term unemployment rate: Percentage of female population that that has been registered as long-term unemployed during the given year.
+-    Women business and the law index: It measures the laws and regulations that affect women’s economic opportunity.
+-    Children per woman
+-    Labor force participation rate, females aged 25-54
+-    Gender ratio of mean years in school (women % men, 25 to 34 years)
+3.   Categorical:
+-    Country
+-    Year
+
+We expect that women in developed countries would have higher society status, be more educated, and participate more in work life than that of developing countries.We also assume that gini coefficient, human development index, and happiness score are all relevant to that status of women in society.
+
+*Source: Based on free material from GAPMINDER.ORG, CC-BY LICENSE*
+
+## 2. Tidying
+Call the package `tidyverse` and tidy the datasets. All the datasets we have are organized in the same way. Each of them has 3 variables — country, year, and a country development indicator or a gender equality indicator. Their common problem is some of the column names are not names of variables, but values of the variable year. We need to pivot the offending columns into a new pair of variables.
+```{r}
+# Yiyun
+# Call the package
+library(tidyverse)
+library(readr)
+
+# Read and rename the datasets
+human_development_index <- read_csv("hdi_human_development_index (1989-2018).csv")
+national_parliaments_proportion <- read_csv("Proportion of seats held by women in national parliaments (%) (1996-2019).csv")
+unemployment_rate <- read_csv("female_long_term_unemployment_rate_percent (1989-2019).csv")
+business_and_law_index <- read_csv("Women business and the law index score (1969-2019).csv")
+females_labour_force_participation <- read_csv("females_aged_25_54_labour_force_participation_rate_percent.csv")
+gender_ratio_of_mean_years_in_school <- read_csv("mean_years_in_school_women_percent_men_25_to_34_years.csv")
+happiness_score <- read_csv("hapiscore_whr (2004-2018).csv")
+children_per_woman_total_fertility <- read_csv("children_per_woman_total_fertility.csv")
+
+# Use pivot_longer() to have an observation for each country/year
+hdi <- human_development_index %>% # Save the new dataset as "hdi"
+  pivot_longer(cols = 2:31, # Columns to put as rows
+               names_to = "year", # Save those names as a variable year
+               # Save the cell values as a variable human_development_index
+               values_to = "human_development_index") 
+
+# Do the same for national_parliaments_proportion - Proportion_of_seats_held_by_women_in_national_parliaments
+npp <- national_parliaments_proportion %>%
+  pivot_longer(cols = 2:25, 
+               names_to = "year",
+               values_to = "Proportion_of_seats_held_by_women_in_national_parliaments")
+
+# Do the same for unemployment_rate - Female_long_term_unemployment_rate  
+ur <- unemployment_rate %>% 
+  pivot_longer(cols = 2:32, 
+               names_to = "year", 
+               values_to = "Female_long_term_unemployment_rate") 
+
+# Do the same for business_and_law_index - Women_business_and_the_law_index_score
+bali <- business_and_law_index %>% 
+  pivot_longer(cols = 2:52, 
+               names_to = "year", 
+               values_to = "Women_business_and_the_law_index_score") 
+
+# Do the same for females_labour_force_participation - Labor_force_female_percentage
+flfp <- females_labour_force_participation %>% 
+  pivot_longer(cols = 2:31, 
+               names_to = "year", 
+               values_to = "Labor_force_female_percentage")
+
+# Do the same for gender_ratio_of_mean_years_in_school - Gender_ratio_of_mean_years_in_school
+gromyis <- gender_ratio_of_mean_years_in_school %>% 
+  pivot_longer(cols = 2:47, 
+               names_to = "year", 
+               values_to = "Gender_ratio_of_mean_years_in_school")
+
+# Do the same for happiness_score - Happiness_score
+hs <- happiness_score %>% 
+  pivot_longer(cols = 2:16, 
+               names_to = "year", 
+               values_to = "Happiness_score")
+
+# Do the same for children_per_woman_total_fertility - children_per_woman
+cpw <- children_per_woman_total_fertility %>% 
+  pivot_longer(cols = 2:302, 
+               names_to = "year", 
+               values_to = "children_per_woman")
+
+```
+
+## 3. Joining
+Join all the dataseta into a new dataset and report the number of each dataset.
+```{r}
+# Xiaojun
+# Create a new data set called `join_data` to combine all data set
+join_data<-
+  
+# Left join the data set `npp` which contains the countries and the years we would like to explore with other datasets
+  npp%>%
+  left_join(hdi, by = c("country","year"))%>%
+  left_join(ur, by = c("country","year"))%>%
+  left_join(bali, by = c("country","year"))%>%
+  left_join(cpw, by = c("country","year"))%>%
+  left_join(flfp, by = c("country","year"))%>%
+  left_join(gromyis, by = c("country","year"))%>%
+  left_join(hs, by = c("country","year"))
+
+```
+*A new dataset called `join_data` is created to contain separate data sources with the IDs `country` and `year`. The number of unique IDs in each dataset are 2, which are `country` and `year`. There is no IDs that appear in one dataset but not the other. The number of unique IDs in common are 2, which are also `country` and `year`.*
+
+```{r}
+# Xiaojun
+# Calculate the number of total observations in each data set
+
+# Calculate the number of total observations in `hdi`
+nrow(hdi)
+
+# Calculate the number of total observations in `npp`
+nrow(npp)
+
+# Calculate the number of total observations in `ur`
+nrow(ur)
+
+# Calculate the number of total observations in `bali`
+nrow(bali)
+
+# Calculate the number of total observations in `cpw`
+nrow(cpw)
+
+# Calculate the number of total observations in `flfp`
+nrow(flfp)
+
+# Calculate the number of total observations in `gromyis`
+nrow(gromyis)
+
+# Calculate the number of total observations in `hs`
+nrow(hs)
+
+```
+*There are 5670 observations in `hdi`, 4632 observations in `npp`, 4340 observations in `ur`, 9639 observations in `bali`, 60802 observations in `cpw`, 5670 observations in `flfp`, 8648 observations in `gromyis`, and 2445 observations in `hs`.*
+
+```{r}
+# Xiaojun
+# Calculate the number of observations that are dropped while joining
+npp%>%
+  full_join(hdi, by = c("country","year"))%>%
+  full_join(ur, by = c("country","year"))%>%
+  full_join(bali, by = c("country","year"))%>%
+  full_join(cpw, by = c("country","year"))%>%
+  full_join(flfp, by = c("country","year"))%>%
+  full_join(gromyis, by = c("country","year"))%>%
+  full_join(hs, by = c("country","year"))%>%
+  anti_join(join_data, by = c("country","year"))%>%
+  nrow()
+
+```
+*There are 56630 observations that are dropped while joining.*
+
+## 4. Wrangling
+Explore the joined dataset with all six functions
+```{r}
+# Yiyun, Xiaojun
+# Find out how many distinct `country` and `year`  we have in `join_data` and the median children per women, the median business and law index, the median female labor force participation rate, the median gender ratio of mean years in school, the median proportion of seats held by women in national parliaments, and the median female long term unemployment rate
+join_data %>%
+  # Calculate the number of distinct countries in our joined dataset
+  summarise(n_countires = n_distinct(country), 
+            # Calculate the number of distinct years in our joined dataset
+            n_years = n_distinct(year),
+            # Calculate the medians of the gender-equality-related variables
+            median_cpw = median(children_per_woman, na.rm = T),
+            median_bali = median(Women_business_and_the_law_index_score, na.rm = T),
+            median_flfp = median(Labor_force_female_percentage, na.rm = T),
+            median_gromyis = median(Gender_ratio_of_mean_years_in_school, na.rm = T),
+            median_poshbinp = median(Proportion_of_seats_held_by_women_in_national_parliaments,na.rm = T),
+            median_fltur = median(Female_long_term_unemployment_rate, na.rm = T))
+
+```
+*There are 193 distinct countries and 24 distinct years in `join_data`.The median children per women is 2.52, the median business and law index is 69.4, the median female labor force participation rate is 70.8%, the median gender ratio of mean years in school is 99.3% which is kind of surprising, the median proportion of seats held by women in national parliaments is 15%, and the median female long term unemployment rate is 1.25%.*
+
+```{r}
+# Xiaojun
+# Find out the top 10 countries with the highest women business and the law index score in the most recent year
+join_data%>%
+  # Show data in the most recent year only
+  filter(year==2018)%>%
+  # Sort by "women business and the law index", greatest-to-least
+  arrange(desc(Women_business_and_the_law_index_score))%>%
+  # Show "country" and "women business and the law index" only
+  select(country,Women_business_and_the_law_index_score)%>%
+  # Remove NA
+  na.omit()%>%
+  # Show the top 10 countries only
+  slice(1:10)
+
+```
+*Belgium, Canada, Denmark, France, Iceland, Luxembourg, Latvia, Sweden, Germany, and Spain are the top 10 countries with the highest women business and the law index score in the most recent year.*
+
+```{r}
+# Xiaojun
+# Since women business and the law index is related to more women working with higher income and improved development outcomes, let's see if countries with the highest women business and the law index are similar to the countries with the highest female labor force percentage
+join_data%>%
+  # Show data in the most recent year only
+  filter(year==2018)%>%
+  # Sort by "labor force percentage", greatest-to-least
+  arrange(desc(Labor_force_female_percentage))%>%
+  # Show "country" and "labor force percentage" only
+  select(country,Labor_force_female_percentage)%>%
+  # Remove NA
+  na.omit()%>%
+  # Show the top 10 countries only
+  slice(1:10)
+
+```
+*Burundi, Rwanda, Belarus, Vietnam, Madagascar, Lao, Solomon Islands, Slovenia, Nepal, and Kenya are the top 10 countries with the highest labor force female percentage. However, they are totally different from the top 10 countries with the highest women business and the law index score. It might because most of female labor force in countries with the highest labor force female percentage are cheap labor force.*
+
+```{r}
+# Xiaojun
+# It is always said that women usually take more responsibility on family and having children might affect their career. Since higher women business and law index score indicates better development on career, let's see if the number of children per women in the top 10 countries with the highest women business and the law index score in the most recent year are lower than the average.
+join_data%>%
+  # Show data in the most recent year only
+  filter(year=="2018")%>%
+  # Compute the average fertility in the world
+  mutate(mean_children_total=mean(children_per_woman,na.rm=T))%>%
+  # Group by country
+  group_by(country)%>%
+  # Compare the average fertility in the world with that of each country
+  summarize(children_per_woman,comparison_mean_children=mean_children_total-children_per_woman)%>%
+  # Show results for the top 10 countries with the highest women business and the law index score only
+  filter(country%in%c("Belgium","Cananda","Denmark","France","Iceland","Luxembourg","Latvia","Sweden","Germany","Spain"))
+
+```
+*From the comparison, we can see that the fertility of the top 10 countries with the highest women business and the law index score are lower than the average.*
+
+```{r}
+# Yiyun
+# We define the female long term unemployment rate below 1% as a low rate, between 1% and 2% as a medium rate, above 2% as a high rate. Let's see in 2019, what proportion of countries had a high female long term unemployment rate.
+join_data %>%
+  # Only show the data in 2019
+  filter(year == 2019) %>%
+  # Create a new variable to categorize the female long term unemployment rate
+  mutate(fltur_cat = case_when(Female_long_term_unemployment_rate > 2 ~ "high",
+                           1 <= Female_long_term_unemployment_rate & Female_long_term_unemployment_rate <= 2 ~ "med",
+                           Female_long_term_unemployment_rate < 1 ~ "low")) %>%
+  # Calculate the proportion of the countries that meet the condition
+  summarise(proportion_of_high = mean(fltur_cat == "high", na.rm = T))
+
+```
+*In 2019, 23.08% of countries had a high female long term unemployment rate.*
+
+```{r}
+# Yiyun
+# To see which country had the biggest increase from 2004 to 2014 in terms of the gender ratio of mean years in school (women % men)
+join_data %>%
+  # Clean the dataset by only keeping the variables we will use
+  select(country, year, Gender_ratio_of_mean_years_in_school) %>%
+  # Only show the data in 2004 and 2014
+  filter(year == 2004 | year == 2014) %>%
+  group_by(country) %>%  # Group by country
+  # Save the values of different years as two different variables
+  pivot_wider(names_from = year,  
+              # Keep the values in corresponding variable
+              values_from = Gender_ratio_of_mean_years_in_school) %>%
+  # Rename the variables
+  select("ratio2004" = "2004", "ratio2014" = "2014") %>%
+  # Create a new variable to calculate the increase rate 
+  mutate(increase_rate = (ratio2014-ratio2004)/ratio2004) %>%
+  # Sort by increase rate, greatest-to-least
+  arrange(desc(increase_rate))
+
+```
+*Yemen had the biggest increase from 2004 to 2014 in terms of the gender ratio of mean years in school (women % men).*
+
+```{r}
+# Yiyun
+# Finally we want to check the differences of proportion of seats held by women in national parliaments of the United States between two subsequent years.
+join_data %>% 
+  # Only show the data of the United States
+  filter(country == "United States") %>%
+  # Create a new variable to calculate the difference between two subsequent years
+  mutate(poshbwinp_change = Proportion_of_seats_held_by_women_in_national_parliaments - lag(Proportion_of_seats_held_by_women_in_national_parliaments)) %>%
+  select(1, 2, 11)  # Only show the relevant variables
+
+```
+*Although the proportion of seats held by women in national parliaments of the United States did not increase in every year, we can see the biggest increase happened in the most recent year, 2019.*
+
+## 5. Visualization
+In this part, we aims to investigate the trends of gender equality development in different countries and explore the relationships between different variables. Does the development of a country have a positive relationship with the development of its gender equality? Are there any exceptions?
+
+```{r}
+# Yiyun
+# In this part, we wants to explore how the Female labor force participation rate change from 2008 to 2018 in developing countries and developed countries.
+join_data %>%
+  # Only show the years and the countries we are interested in
+  filter(year >= 2008, year <= 2018, country %in% c("United States", "China", "Vietnam", "Iceland")) %>%
+  # Change the type of the variable
+  mutate(year = as.numeric(year)) %>%
+  ggplot(aes(x = year, y = Labor_force_female_percentage, color = country)) +
+  geom_point() +  # Create a scatter plot 
+  geom_line() + # Add lines to plot
+  # Modify the title and y-axis label of the plot
+  labs(title = "The Female Labor Force participation Rate Change over Time", 
+       y = "Female Labor Force participation Rate (%)") +
+  # Modify the scales of y-axis and x-axis
+  scale_y_continuous(breaks = seq(0, 100, by = 5)) +
+  scale_x_continuous(breaks = seq(2008, 2018, by = 1)) +
+  # Change the theme
+  theme_minimal()
+
+```
+*This plot shows how the female labor force participation rate of 4 countries change over the 10 years. Usually, we are inclined to think there is a positive relationship between the development of a country and its female labor force participation rate. However, based on this plot, the situation is more complex than we think. The two countries with the highest rates are Vietnam and Iceland, which are respectively a developing country and a developed country. The  female labor force participation rate of a country not only depends on its development level, but also the employment opportunity, the family values and other factors. *
+```{r}
+# Yiyun
+# We identified that there might be a relationship between the women business and the law index score and the number of children per woman in some countries previously. Let's create a plot to see if it also applies to other countries in the world. Meanwhile, the human development index and the happiness score might also be important indicators that have an influence on women business and the law index, we could also include them as variables.
+join_data %>%
+  filter(year == 2018) %>% # Only look at the data in 2018
+  # Explore the relationship between 4 variables
+  ggplot(aes(x = human_development_index, y = Women_business_and_the_law_index_score, col = Happiness_score, size = children_per_woman)) + 
+  geom_point() + # Create a scatter plot
+  # Add a regression line to to show the relationship more clearly
+  geom_smooth(method="lm") + 
+  # Modify the title, x-axis label, y-axis label and legend labels
+  labs(title = "The Relationship between Human Development Index,\nWomen Business and the Law Index,\nHappiness Score, and Children per Woman",
+       x = "Human Development Index",
+       y = "Women Business and the Law Index",
+       col = "Happiness Score",
+       size = "Children per Woman") +
+  # Change  the scale of y-axis and x-axis
+  scale_y_continuous(breaks = seq(0, 100, by = 10)) + 
+  scale_x_continuous(breaks = seq(0, 1, by = 0.1)) +
+  # Modify the title size
+  theme(plot.title = element_text(size = 14)) 
+
+```
+*This plot depicts the relationship between Human Development Index, Women Business and the Law Index, Happiness Score and Children per Woman in 2018. Apparently, there is a positive relationship between Human Development Index, Happiness Score and Women Business and the Law Index, which means the countries which made a better achievement in human development and made their citizens feel happier often empowered women more in business and the law. Also, human development of a country tends to result in a lower fertility desire of the people there.*
+```{r}
+# Xiaojun
+# Let's focus on North America. Create a plot to compare proportion of seats held by women in each nation with the average in the world, and see which countries have the highest proportion of seats held by women in the most recent year
+
+# Create a data `mean_npp_2019` to store the average proportion of seats held by women in the world
+mean_npp_2019<-
+  join_data%>%
+# Show data in 2019 only
+  filter(year==2019)%>%
+# Compute the average proportion of seats held by women in the world
+  summarize(mean(Proportion_of_seats_held_by_women_in_national_parliaments,na.rm=T))%>%
+# Unlist the data
+  unlist()
+
+join_data%>%
+# Show data in 2019 only
+  filter(year==2019)%>%
+# Select countries in North America only
+  filter(country%in%c("Antigua and Barbuda","Bahamas","Barbados","Belize","Canada","Costa Rica","Cuba","Dominica","Dominican Republic","El Salvador","Grenada","Guatemala","Haiti","Honduras","Jamaica","Mexico","Nicaragua","Panama","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Trinidad and Tobago","United States"))%>%
+  select(country,year,Proportion_of_seats_held_by_women_in_national_parliaments)%>%
+# Sort by the proportion of seats held by women, greatest-lowest
+  mutate(country=reorder(country,Proportion_of_seats_held_by_women_in_national_parliaments))%>%
+# Drop NAs
+  na.omit()%>%
+# Create a plot
+  ggplot+
+# Create a bar chart with the variables of country and the proportion of seats held by women
+  geom_bar(aes(x=country,y=Proportion_of_seats_held_by_women_in_national_parliaments),stat="identity")+
+# Change the scale of y-axis
+  scale_y_continuous(breaks = seq(0, 50, by = 10))+
+# Create a line for the average proportion of seats held by women in the world
+  geom_hline(yintercept=mean_npp_2019,color="red")+
+# Label the axes and the line
+  annotate("text",x=3,y=30.5,label="Average line of Proportion
+           of seats held by wome in the world",size=3)+
+# Change the theme to make the country names visible
+  theme(axis.text.x=element_text(angle=90))+
+  labs(title="Proportion of seats held by women of each country in North America in 2019",
+       x="Country",
+       y="Proportion of seats held by women")
+```
+*The plot shows the proportion of seats held by women in each country in North America in 2019. The top 3 countries with the highest proportion of seats held by women in North America are Cuba, Mexico, and Nicaragua, and the lowest 3 countries are Belize, Antigua and Barbuda, and Bahamas. Compared to the average proportion of seats held by women in the world, the proportion of more than a half countries in North America are above the global average level while there are 7 countries are below the average.*
+
+```{r, echo=F}
+## DO NOT DELETE THIS BLOCK!
+Sys.info()
+```

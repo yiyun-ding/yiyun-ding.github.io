@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Chris Turner</title>
+    <link>/</link>
+    <description>Recent content on Chris Turner</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Tue, 01 Dec 2020 21:13:14 -0500</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello R Markdown</title>
+      <link>/post/2020/12/01/hello-r-markdown/</link>
+      <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2020/12/01/hello-r-markdown/</guid>
+      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+    </item>
+    
+    <item>
+      <title>Gender Equality and the Overall Development of the Country</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>1. Introduction (Xiaojun) Although there is a lack of clear agreement on which countries fit the category of developing or developed countries, the Human Development Index (HDI) is often considered an important division criterion that classifies the countries with HDI equal to or greater than 0.8 as developed countries and the countries with HDI under 0.8 as developing countries (O’Sullivan 2003). Since HDI indicates the development of education, economy, life expectancy, etc.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/</guid>
+      <description> Check out some of my coding projects below:
+ Wrangling &amp;amp; Exploratory Data Analysis
+ Modeling, Inference, Prediction
+  -- </description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>    </description>
+    </item>
+    
+    <item>
+      <title>The Development of Gender Equality across the World</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>1. Introduction With the rise of feminism, there are many gender equality activities such as HeForShe and MeToo launched in recent years around the world. It also brings us the questions that women in which countries have the highest society status, how the status of women in the society changed over years. To solve those kinds of questions, we do the analysis to find out the answers. Since the status of women could be reflected in many aspects such as education, work, and politics, we will include different gender equality indicators in this report.</description>
+    </item>
+    
+  </channel>
+</rss>

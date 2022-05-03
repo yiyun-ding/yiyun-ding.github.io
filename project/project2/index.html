@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Yiyun Ding" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Gender Equality and the Overall Development of the Country</title>
+    <meta name="generator" content="Hugo 0.98.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/post/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project/project2/">Gender Equality and the Overall Development of the Country</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="introduction-xiaojun" class="section level2">
+<h2>1. Introduction (Xiaojun)</h2>
+<p>Although there is a lack of clear agreement on which countries fit the category of developing or developed countries, the Human Development Index (HDI) is often considered an important division criterion that classifies the countries with HDI equal to or greater than 0.8 as developed countries and the countries with HDI under 0.8 as developing countries (O’Sullivan 2003). Since HDI indicates the development of education, economy, life expectancy, etc. of a country, we would like to see if gender equality variables such as women business and law index also play roles in indicating the development status of a country and if we could predict development status of a country through gender equality variables.</p>
+<p>We got the datasets from Gapminder. They are all with 3 variables which are country, year and the value of an indicator. A common problem of those datasets is their column names are years rather than names of the indicators, so we used pivot_longer to make them tidy. Besides, we join all the tidy datasets into one dataset. Through exploring the datasets, we saw that there are the most complete data in 2014, so we will only be focused on the year 2014.</p>
+<p>Here is the list of the variables we will use and the clarification of some key variables:</p>
+<ol style="list-style-type: decimal">
+<li>Country development variables:</li>
+</ol>
+<ul>
+<li>Human development index: It contains three dimensions - health level, educational level, and living standard.</li>
+<li>Happiness Score: The national average response to the question of life evaluations.</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>Gender equality variables:</li>
+</ol>
+<ul>
+<li>Proportion of seats held by women in national parliaments</li>
+<li>Female long term unemployment rate: Percentage of female population that that has been registered as long-term unemployed during the given year.</li>
+<li>Women business and the law index: It measures the laws and regulations that affect women’s economic opportunity.</li>
+<li>Children per woman</li>
+<li>Labor force participation rate, females aged 25-54</li>
+<li>Gender ratio of mean years in school (women % men, 25 to 34 years)</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Categorical:</li>
+</ol>
+<ul>
+<li>Country</li>
+<li>Year</li>
+</ul>
+<p>We expect that through looking at gender equality variables, it could predict if a country is a developing or developed country. We assumed that developed countries would have a higher happiness score, higher proportion of seats held by women in national parliaments, lower female long term unemployment rate, higher women business and the law index, lower number of children per woman, higher labor force participation rate of women aged 25 to 34, and higher gender ratio of mean years in school for women aged 25 to 34. Additionally, the human development index might have a stronger relationship with happiness score, labor force participation rate, and gender ratio of mean years in school.</p>
+<p><em>Source:</em></p>
+<p><em>Based on free material from GAPMINDER.ORG, CC-BY LICENSE.</em></p>
+<p><em>O’Sullivan A, Sheffrin SM (2003). Economics: Principles in Action. Upper Saddle River, New Jersey 07458: Pearson Prentice Hall. p. 471. ISBN 978-0-13-063085-8.</em></p>
+</div>
+<div id="data-wrangling-yiyun" class="section level2">
+<h2>2. Data Wrangling (Yiyun)</h2>
+<p>We created a new categorical variable <code>development</code> to define developing and developed countries with human development index. A country with human development index above 0.8 is defined as developed country, and a country with human development index lower than 0.8 is considered as a developing country.</p>
+<pre class="r"><code># Call the package
+library(tidyverse)
+library(factoextra)
+library(cluster)
+library(readr)
+library(plotROC)
+
+# Read and rename the datasets
+human_development_index &lt;- read_csv(&quot;hdi_human_development_index (1989-2018).csv&quot;)
+national_parliaments_proportion &lt;- read_csv(&quot;Proportion of seats held by women in national parliaments (%) (1996-2019).csv&quot;)
+unemployment_rate &lt;- read_csv(&quot;female_long_term_unemployment_rate_percent (1989-2019).csv&quot;)
+business_and_law_index &lt;- read_csv(&quot;Women business and the law index score (1969-2019).csv&quot;)
+females_labour_force_participation &lt;- read_csv(&quot;females_aged_25_54_labour_force_participation_rate_percent.csv&quot;)
+gender_ratio_of_mean_years_in_school &lt;- read_csv(&quot;mean_years_in_school_women_percent_men_25_to_34_years.csv&quot;)
+happiness_score &lt;- read_csv(&quot;hapiscore_whr (2004-2018).csv&quot;)
+children_per_woman_total_fertility &lt;- read_csv(&quot;children_per_woman_total_fertility.csv&quot;)
+
+# Use pivot_longer() to have an observation for each country/year
+hdi &lt;- human_development_index %&gt;% # Save the new dataset as &quot;hdi&quot;
+  pivot_longer(cols = 2:31, # Columns to put as rows
+               names_to = &quot;year&quot;, # Save those names as a variable year
+               # Save the cell values as a variable human_development_index
+               values_to = &quot;human_development_index&quot;) 
+
+# Do the same for other datasets
+npp &lt;- national_parliaments_proportion %&gt;%
+  pivot_longer(cols = 2:25, 
+               names_to = &quot;year&quot;,
+               values_to = &quot;Proportion_of_seats_held_by_women_in_national_parliaments&quot;)
+
+ur &lt;- unemployment_rate %&gt;% 
+  pivot_longer(cols = 2:32, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;Female_long_term_unemployment_rate&quot;) 
+
+bali &lt;- business_and_law_index %&gt;% 
+  pivot_longer(cols = 2:52, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;Women_business_and_the_law_index_score&quot;) 
+
+flfp &lt;- females_labour_force_participation %&gt;% 
+  pivot_longer(cols = 2:31, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;Labor_force_female_percentage&quot;)
+
+gromyis &lt;- gender_ratio_of_mean_years_in_school %&gt;% 
+  pivot_longer(cols = 2:47, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;Gender_ratio_of_mean_years_in_school&quot;)
+
+hs &lt;- happiness_score %&gt;% 
+  pivot_longer(cols = 2:16, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;Happiness_score&quot;)
+
+cpw &lt;- children_per_woman_total_fertility %&gt;% 
+  pivot_longer(cols = 2:302, 
+               names_to = &quot;year&quot;, 
+               values_to = &quot;children_per_woman&quot;)
+
+# Create a new data set called `join_data` to combine all data set
+join_data &lt;- npp%&gt;%
+  left_join(hdi, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(ur, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(bali, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(cpw, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(flfp, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(gromyis, by = c(&quot;country&quot;,&quot;year&quot;))%&gt;%
+  left_join(hs, by = c(&quot;country&quot;,&quot;year&quot;))
+
+# Create the final dataset
+final_data &lt;- join_data %&gt;%
+  # Create a new categorical variable based on the human development index
+  mutate(development = ifelse(human_development_index &lt; 0.8, &quot;developing&quot;, &quot;developed&quot;)) %&gt;%
+  # Only show the data in 2014
+  filter(year == 2014) %&gt;%
+  # Rename the variables
+  rename(seat_proportion = Proportion_of_seats_held_by_women_in_national_parliaments,
+         hdi = human_development_index,
+         unemployment = Female_long_term_unemployment_rate,
+         business_law = Women_business_and_the_law_index_score,
+         labor_force = Labor_force_female_percentage,
+         gender_school = Gender_ratio_of_mean_years_in_school) %&gt;%
+  # Remove the missing values
+  na.omit()</code></pre>
+</div>
+<div id="exploratory-data-analysis-yiyun" class="section level2">
+<h2>2. Exploratory Data Analysis (Yiyun)</h2>
+<p>Explore relationships between main variables by creating a correlation matrix with univariate/bivariate graphs and correlation coefficients.</p>
+<pre class="r"><code># Create a correlation matrix with all the numeric variables
+final_num &lt;- final_data %&gt;%
+  select_if(is.numeric) 
+cor(final_num, use = &quot;pairwise.complete.obs&quot;)</code></pre>
+<pre><code>##                    seat_proportion         hdi unemployment business_law
+## seat_proportion         1.00000000  0.14581547   0.08359069    0.4864887
+## hdi                     0.14581547  1.00000000   0.08696466    0.5649274
+## unemployment            0.08359069  0.08696466   1.00000000    0.2496041
+## business_law            0.48648867  0.56492740   0.24960406    1.0000000
+## children_per_woman      0.16223183 -0.72773967  -0.30145544   -0.3460974
+## labor_force             0.22762400  0.50656343   0.06288617    0.6674999
+## gender_school          -0.04428896  0.58716953   0.10866412    0.3208878
+## Happiness_score         0.35945209  0.72283601  -0.29841753    0.4270861
+##                    children_per_woman labor_force gender_school Happiness_score
+## seat_proportion             0.1622318  0.22762400   -0.04428896       0.3594521
+## hdi                        -0.7277397  0.50656343    0.58716953       0.7228360
+## unemployment               -0.3014554  0.06288617    0.10866412      -0.2984175
+## business_law               -0.3460974  0.66749992    0.32088778       0.4270861
+## children_per_woman          1.0000000 -0.30400688   -0.59350223      -0.3037195
+## labor_force                -0.3040069  1.00000000    0.36459087       0.3961124
+## gender_school              -0.5935022  0.36459087    1.00000000       0.3131940
+## Happiness_score            -0.3037195  0.39611243    0.31319396       1.0000000</code></pre>
+<pre class="r"><code># Make it pretty using a heatmap with geom_tile
+cor(final_num, use = &quot;pairwise.complete.obs&quot;) %&gt;%
+  # Save as a data frame
+  as.data.frame %&gt;%
+  # Convert row names to an explicit variable
+  rownames_to_column %&gt;%
+  # Pivot so that all correlations appear in the same column
+  pivot_longer(-1, names_to = &quot;other_var&quot;, values_to = &quot;correlation&quot;) %&gt;%
+  ggplot(aes(rowname, other_var, fill = correlation)) +
+  # Heatmap with geom_tile
+  geom_tile() +
+  # Change the scale to make the middle appear neutral
+  scale_fill_gradient2(low=&quot;red&quot;,mid=&quot;white&quot;,high=&quot;blue&quot;) +
+  # Overlay values
+  geom_text(aes(label = round(correlation,2)), color = &quot;black&quot;, size = 4) +
+  # Give title and labels
+  labs(title = &quot;Correlation matrix for the dataset final_data&quot;, x = &quot;variable 1&quot;, y = &quot;variable 2&quot;) +
+  # Change the axis size
+  theme(axis.text.x = element_text(size = 8, angle = 90))</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" />
+<em>From the correlation heatmap, we can see that human development index and the number of children per woman are the most correlated. The relationship between between proportion of seats held by women in national parliaments and gender ratio of mean years in school (women % men, 25 to 34 years) is the weakest.</em></p>
+</div>
+<div id="clustering-xiaojun" class="section level2">
+<h2>3. Clustering (Xiaojun)</h2>
+<p>We are going to incorporate categorical variables and perform clustering based on Gower dissimilarities.</p>
+<pre class="r"><code># Identify the variable `development` as factor
+final_data_factor &lt;- final_data %&gt;%
+  mutate_if(is.character, as.factor)
+
+# Prepare the data (we drop the variables that are not directly related to gender equality)
+final_data_factor1 &lt;- final_data %&gt;%
+  select(-year, -country, -hdi, -Happiness_score, -development) %&gt;%
+  mutate_if(is.character, as.factor)
+
+# Calculate Gower&#39;s distances between observations
+final_data_gower &lt;- daisy(final_data_factor1, metric = &quot;gower&quot;) %&gt;%
+  # Save as a matrix
+  as.matrix
+
+# Apply the PAM algorithm to the &quot;dissimilarity&quot; object to see how many clusters we should consider
+fviz_nbclust(final_data_gower, pam, method = &quot;silhouette&quot;)</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" />
+<em>Based on silhouette width, the number of clusters we should consider is 2.</em></p>
+<pre class="r"><code># Apply PAM on the dissimilarity object
+pam_results &lt;- pam(final_data_gower, k = 2, diss = TRUE)
+pam_results</code></pre>
+<pre><code>## Medoids:
+##      ID       
+## [1,] &quot;14&quot; &quot;14&quot;
+## [2,] &quot;45&quot; &quot;45&quot;
+## Clustering vector:
+##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 
+##  1  1  2  2  1  2  2  1  1  1  1  2  2  1  1  1  2  2  2  2  1  1  2  2  2  2 
+## 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 
+##  2  1  2  1  1  2  2  1  1  1  2  1  2  1  1  1  1  2  2  2  1  1  2  1  1  1 
+## 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 
+##  1  2  1  2  2  2  1  1  1  2  2  1  1  1  1  1  2  2  2  2  1  1  1  1  1  1 
+## 79 
+##  2 
+## Objective function:
+##     build      swap 
+## 0.1172269 0.1144833 
+## 
+## Available components:
+## [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+## [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;</code></pre>
+<pre class="r"><code># Save cluster assignment as a column in the dataset
+final_data_pam &lt;- final_data_factor1%&gt;%
+mutate(cluster = as.factor(pam_results$clustering))
+
+# Visualize the clusters
+pam_results$data=final_data_gower
+
+fviz_cluster(pam_results, data = final_data_factor1,
+             shape = final_data_factor$development)+
+  geom_point(aes(shape = final_data_factor$development)) +
+  guides(shape = guide_legend(title = &quot;shape&quot;))</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" />
+<em>From the plot, we can roughly see that most of the developing countries are in Cluster 1, and most of the developed countries are in Cluster 2.</em></p>
+<pre class="r"><code># Compare the cluster and development
+table(final_data_pam$cluster, final_data$development)</code></pre>
+<pre><code>##    
+##     developed developing
+##   1        14         30
+##   2        31          4</code></pre>
+<pre class="r"><code># Finding means of each variable for each cluster
+final_data_pam %&gt;%
+  group_by(cluster) %&gt;%
+  summarize_if(is.numeric, mean, na.rm = T)</code></pre>
+<pre><code>## # A tibble: 2 x 7
+##   cluster seat_proportion unemployment business_law children_per_wo… labor_force
+##   &lt;fct&gt;             &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;            &lt;dbl&gt;       &lt;dbl&gt;
+## 1 1                  19.0         1.39         75.2             2.20        64.8
+## 2 2                  30.0         2.73         94.2             1.74        81.2
+## # … with 1 more variable: gender_school &lt;dbl&gt;</code></pre>
+<pre class="r"><code># Which countries are more representative of their cluster?
+# Look at the final medoids
+final_data_factor[pam_results$id.med,]</code></pre>
+<pre><code>## # A tibble: 2 x 11
+##   country year  seat_proportion   hdi unemployment business_law children_per_wo…
+##   &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt;        &lt;dbl&gt;            &lt;dbl&gt;
+## 1 Chile   2014             15.8 0.842        0.621         77.5             1.79
+## 2 Luxemb… 2014             28.3 0.906        1.62         100               1.56
+## # … with 4 more variables: labor_force &lt;dbl&gt;, gender_school &lt;dbl&gt;,
+## #   Happiness_score &lt;dbl&gt;, development &lt;fct&gt;</code></pre>
+<p><em>Through comparing the cluster and development, we can see that in Cluster 1, there are 30 developing countries and 14 developed countries. For Cluster 2, there are 31 developed countries and only 4 developing countries. From the means of each variable for each cluster, we noticed that there are big differences in proportion of seats held by women in national parliaments, women business and the law index, and labor force participation rate of females aged 25-54 between Cluster 1 and Cluster 2. Chile is more representative of Cluster 1 while Luxembourg is more representative of Cluster 2.</em></p>
+</div>
+<div id="dimensionality-reduction-yiyun" class="section level2">
+<h2>4. Dimensionality Reduction (Yiyun)</h2>
+<p>In this section, we will perform PCA on all of the gender equality variables to see their interrelationships.</p>
+<pre class="r"><code>final_data_factor1 %&gt;%
+  # Scale the variables
+  scale %&gt;%
+  # Save the new dataset as a dataframe &quot;final_frame&quot;
+  as.data.frame -&gt; final_scale
+
+final_scale %&gt;%
+  # Perform PCA on the measurements and save the resulting dataframe as &quot;pca&quot;
+  prcomp() -&gt; pca
+
+#Construct a scree plot to show the percentage of explained variance for PCs
+fviz_eig(pca, addlabels = TRUE)</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Visualize the 5 top contributions of the variables to PC1
+fviz_contrib(pca, choice = &quot;var&quot;, axes = 1, top = 5)</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Visualize the 5 top contributions of the variables to PC2
+fviz_contrib(pca, choice = &quot;var&quot;, axes = 2, top = 5)</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-6-3.png" width="672" style="display: block; margin: auto;" />
+<em>The first two PCs can explain 64.5% of the total variances and the first three can explain 80.8%. The women business and the law index, the female labor force participation rate, children per woman, and gender ratio of mean years in school contribute above-average to PC1, among which the women business and the law index contributes the most with nearly 30% of contributions. However, PC2 is primarily contributed by the proportion of seats held by women in national parliaments, with over 45% of contributions. We could say PC1 is more about women’s career development opportunity and PC2 is focus on women’s political rights based on the contributions of the variables.</em></p>
+</div>
+<div id="classification-and-cross-validation-yiyun-xiaojun" class="section level2">
+<h2>5. Classification and Cross-validation (Yiyun, Xiaojun)</h2>
+<p>We will use logistic regression to predict the development status of a country based on variables related to gender equality in the dataset.</p>
+<pre class="r"><code># Prepare the dataset
+  final_data_factor &lt;- final_data_factor %&gt;%
+  mutate(development = ifelse(development == &quot;developing&quot;, 0, 1)) 
+
+# Use logistic regression
+logistic_fit &lt;- glm(development ~ seat_proportion + unemployment + business_law + children_per_woman + labor_force + gender_school, 
+                    data = final_data_factor, family = &quot;binomial&quot;)
+
+# Calculate a predicted probability
+log_final_data &lt;- final_data_factor %&gt;% 
+  mutate(probability = predict(logistic_fit, type = &quot;response&quot;))</code></pre>
+<pre class="r"><code># Build the ROC curve for this model
+ROC &lt;- ggplot(log_final_data) + 
+  geom_roc(aes(d = as.numeric(development), m = probability, n.cuts = 0))
+ROC</code></pre>
+<p><img src="/project/project2_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Compute the AUC
+calc_auc(ROC)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.9333333</code></pre>
+<p><em>The AUC is 0.933 which means the logistic regression model is great.</em></p>
+<p>We will then perform k-fold cross-validation to test our model.</p>
+<pre class="r"><code># Set a seed to get reproducible results
+set.seed(322)
+
+k = 10
+
+# Randomly order rows in the dataset
+data &lt;- final_data_factor[sample(nrow(final_data_factor)), ] 
+
+# Create k folds from the dataset
+folds &lt;- cut(seq(1:nrow(data)), breaks = k, labels = FALSE) 
+
+# Use a for loop to get diagnostics for each test set
+diags_k &lt;- NULL
+
+for(i in 1:k){
+  # Create training and test sets
+  train &lt;- data[folds != i, ] # all observations except in fold i
+  test &lt;- data[folds == i, ]  # observations in fold i
+  
+  # Train model on training set (all but fold i)
+  fit &lt;- glm(development ~ seat_proportion + unemployment + business_law + children_per_woman + labor_force + gender_school, 
+                    data = final_data_factor, family = &quot;binomial&quot;)
+  
+  # Test model on test set (fold i)
+  df &lt;- data.frame(
+    prob = predict(fit, newdata = test, type = &quot;response&quot;),
+    y = test$development)
+  
+  # Consider the ROC curve for the test dataset
+  ROCplot &lt;- ggplot(df) + geom_roc(aes(d = y, m = prob), n.cuts = 0)
+ 
+  # Get diagnostics for fold i (AUC)
+  diags_k[i] &lt;- calc_auc(ROCplot)$AUC
+}  
+
+# Resulting diagnostics for average performance
+mean(diags_k)  </code></pre>
+<pre><code>## [1] 0.9266667</code></pre>
+<p><em>After we performed 10-fold cross-validation with this model, there’s not a noticeable decrease in AUC so this model is not overfitting.</em></p>
+<p><em>Based on all the analysis we did in this project we could conclude that gender equality is a reliable predictor of the overall development status of a country. The economically-advanced countries tend to perform better on the gender equality indicators than the developing countries.</em></p>
+<pre><code>##                                       sysname 
+##                                       &quot;Linux&quot; 
+##                                       release 
+##                          &quot;4.15.0-171-generic&quot; 
+##                                       version 
+## &quot;#180-Ubuntu SMP Wed Mar 2 17:25:05 UTC 2022&quot; 
+##                                      nodename 
+##                  &quot;educcomp02.ccbb.utexas.edu&quot; 
+##                                       machine 
+##                                      &quot;x86_64&quot; 
+##                                         login 
+##                                     &quot;unknown&quot; 
+##                                          user 
+##                                      &quot;yd5285&quot; 
+##                                effective_user 
+##                                      &quot;yd5285&quot;</code></pre>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
